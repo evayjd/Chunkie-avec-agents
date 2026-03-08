@@ -1,0 +1,120 @@
+# =========================
+# Python
+# =========================
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*.so
+
+.Python
+.env
+.env.*
+.venv/
+venv/
+ENV/
+env/
+
+pip-log.txt
+pip-delete-this-directory.txt
+
+# =========================
+# Build / packaging
+# =========================
+
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =========================
+# Logs
+# =========================
+
+*.log
+logs/
+
+# =========================
+# Jupyter
+# =========================
+
+.ipynb_checkpoints
+
+# =========================
+# IDE
+# =========================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS
+# =========================
+
+.DS_Store
+Thumbs.db
+
+# =========================
+# Database
+# =========================
+
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# Upload files
+# =========================
+
+uploads/
+
+# =========================
+# Vector / embeddings cache
+# =========================
+
+*.faiss
+*.index
+*.npy
+
+# =========================
+# Evaluation generated files
+# =========================
+
+evaluation/dataset.json
+evaluation/results.json
+
+# =========================
+# Node / frontend
+# =========================
+
+node_modules/
+dist/
+build/
+
+# =========================
+# Docker
+# =========================
+
+docker-data/
+*.pid
+*.seed
+*.pid.lock
+
+# =========================
+# Local models
+# =========================
+
+models/
+ollama_models/
+
+# =========================
+# Secrets
+# =========================
+
+.env
+.env.local
+.env.production
