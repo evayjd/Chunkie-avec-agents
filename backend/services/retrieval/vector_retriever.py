@@ -3,11 +3,12 @@ from uuid import UUID
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from backend.services.retrieval.base_retriever import BaseRetriever
 
 from backend.services.ingestion.embedding.embedder import Embedder
 
 
-class Retriever:
+class VectorRetriever(BaseRetriever):
     """
     向量检索模块
     """

@@ -86,6 +86,7 @@ uploads/
 
 evaluation/dataset.json
 evaluation/results.json
+evaluation/results/
 
 # =========================
 # Node / frontend

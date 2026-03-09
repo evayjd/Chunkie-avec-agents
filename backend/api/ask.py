@@ -5,7 +5,7 @@ from backend.core.database import get_db
 from backend.schemas.request_models import AskRequest
 from backend.schemas.response_models import AskResponse
 
-from backend.services.retrieval.retriever import Retriever
+from backend.services.retrieval.retriever_factory import get_retriever
 from backend.services.generation.answer_generator import AnswerGenerator
 
 
@@ -18,7 +18,7 @@ def ask_question(
     db: Session = Depends(get_db)
 ):
 
-    retriever = Retriever(db)
+    retriever = get_retriever("hybrid", db)
 
     chunks = retriever.retrieve(
         question=req.question,
