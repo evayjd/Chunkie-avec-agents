@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 from backend.services.retrieval.retriever_factory import get_retriever
-from backend.core.retrieval_config import RETRIEVAL_METHOD
 from backend.core.database import SessionLocal
 
 from evaluation.metrics import recall_at_k

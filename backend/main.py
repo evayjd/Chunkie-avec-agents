@@ -3,7 +3,9 @@ from backend.core.config import settings
 from backend.core.logging import logger
 from backend.api import upload, ask, documents, retrieve
 from backend.core.database import init_db
+from backend.api import agent
 from contextlib import asynccontextmanager
+
 
 
 @asynccontextmanager
@@ -21,6 +23,7 @@ app.include_router(upload.router)
 app.include_router(ask.router)
 app.include_router(documents.router)
 app.include_router(retrieve.router)
+app.include_router(agent.router)
 
 
 @app.get("/health")
