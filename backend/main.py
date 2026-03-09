@@ -1,17 +1,15 @@
 from fastapi import FastAPI
 from backend.core.config import settings
 from backend.core.logging import logger
-from backend.api import upload, ask, documents
+from backend.api import upload, ask, documents, retrieve
 from backend.core.database import init_db
 from contextlib import asynccontextmanager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # startup
     init_db()
     yield
-    # shutdown (optional)
 
 
 app = FastAPI(
@@ -22,6 +20,7 @@ app = FastAPI(
 app.include_router(upload.router)
 app.include_router(ask.router)
 app.include_router(documents.router)
+app.include_router(retrieve.router)
 
 
 @app.get("/health")

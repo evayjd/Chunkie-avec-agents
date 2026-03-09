@@ -3,18 +3,15 @@ from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
 from backend.schemas.request_models import AskRequest
-from backend.schemas.response_models import AskResponse
-
 from backend.services.retrieval.retriever_factory import get_retriever
-from backend.services.generation.answer_generator import AnswerGenerator
 from backend.core.retrieval_config import RETRIEVAL_METHOD
 
 
 router = APIRouter()
 
 
-@router.post("/ask", response_model=AskResponse)
-def ask_question(
+@router.post("/retrieve")
+def retrieve_chunks(
     req: AskRequest,
     db: Session = Depends(get_db)
 ):
@@ -26,10 +23,6 @@ def ask_question(
         document_ids=req.document_ids,
         top_k=req.top_k
     )
-
-    generator = AnswerGenerator()
-
-    answer = generator.generate(req.question, chunks)
 
     citations = []
 
@@ -46,7 +39,6 @@ def ask_question(
             "snippet": c["content"][:200]
         })
 
-    return AskResponse(
-        answer=answer,
-        citations=citations
-    )
+    return {
+        "citations": citations
+    }

@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # Models (local)
     EMBEDDING_MODEL: str = "BAAI/bge-small-en"
-    CHAT_MODEL: str = "llama3"
+    CHAT_MODEL: str = "llama3.1:8b"
 
     # Vector dimension (must match embedding model)
     VECTOR_DIM: int = 384

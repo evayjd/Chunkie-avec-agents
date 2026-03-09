@@ -1,28 +1,21 @@
 import json
 import requests
 from pathlib import Path
-import argparse
-
+from backend.core.retrieval_config import RETRIEVAL_METHOD
 from evaluation.metrics import keyword_score, citation_score
 
 API_URL = "http://localhost:8000/ask"
 
 DATASET = "evaluation/dataset.json"
 
-parser = argparse.ArgumentParser()
+RESULT_FILE = "evaluation/results/generation_results.json"
 
-parser.add_argument(
-    "--method",
-    type=str,
-    default="default"
-)
 
-args = parser.parse_args()
 
-METHOD = args.method
 
-RESULT_FILE = f"evaluation/results/{METHOD}_generation_results.json"
 
+# 根据 method 自动生成文件名
+RESULT_FILE = f"evaluation/results/{RETRIEVAL_METHOD}_generation_results.json"
 
 def run():
 

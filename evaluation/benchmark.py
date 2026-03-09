@@ -1,99 +1,66 @@
 import json
-import requests
-from datetime import datetime
 from pathlib import Path
+from backend.services.retrieval.retriever_factory import get_retriever
+from backend.core.retrieval_config import RETRIEVAL_METHOD
+from backend.core.database import SessionLocal
 
-from metrics import keyword_score, citation_score
+from evaluation.metrics import recall_at_k
+from backend.core.retrieval_config import RETRIEVAL_METHOD
+
+DATASET = "evaluation/dataset.json"
 
 
-API_URL = "http://localhost:8000/ask"
+RESULT_FILE = f"evaluation/results/{RETRIEVAL_METHOD}_benchmark_results.json"
 
-BASE_DIR = Path(__file__).parent
-DATASET_PATH = BASE_DIR / "dataset.json"
-RESULT_DIR = BASE_DIR / "results"
-
-
-def save_results(results):
-
-    RESULT_DIR.mkdir(parents=True, exist_ok=True)
-
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    output_file = RESULT_DIR / f"run_{run_id}.json"
-
-    with open(output_file, "w") as f:
-        json.dump(results, f, indent=2)
-
-    print("Benchmark saved:", output_file)
+METHOD = RETRIEVAL_METHOD
 
 
 def run():
 
-    if not DATASET_PATH.exists():
-        raise FileNotFoundError(f"Dataset not found: {DATASET_PATH}")
-
-    with open(DATASET_PATH) as f:
+    with open(DATASET) as f:
         dataset = json.load(f)
 
+    db = SessionLocal()
+
+    retriever = get_retriever(METHOD, db)
+
     scores = []
-    details = []
 
     for item in dataset:
 
-        question = item["question"]
-
-        res = requests.post(
-            API_URL,
-            json={
-                "question": question,
-                "document_ids": None,
-                "top_k": 5
-            },
-            timeout=60
+        chunks = retriever.retrieve(
+            question=item["question"],
+            top_k=5
         )
 
-        if res.status_code != 200:
-            print("API ERROR:", res.status_code)
-            print(res.text)
-            continue
+        retrieved_ids = [
+            c["chunk_id"] for c in chunks
+        ]
 
-        data = res.json()
+        relevant_ids = item["relevant_chunk_ids"]
 
-        answer = data.get("answer", "")
-        citations = data.get("citations", [])
+        score = recall_at_k(
+            retrieved_ids,
+            relevant_ids,
+            5
+        )
 
-        k_score = keyword_score(answer, item["expected_keywords"])
-        c_score = citation_score(citations)
+        scores.append(score)
 
-        total = (k_score * 0.7) + (c_score * 0.3)
+    result = {
 
-        scores.append(total)
+        "benchmark_score": sum(scores)/len(scores)
 
-        details.append({
-            "question": question,
-            "answer": answer,
-            "keyword_score": k_score,
-            "citation_score": c_score,
-            "total_score": total
-        })
-
-        print("Q:", question)
-        print("Score:", total)
-        print()
-
-    avg = sum(scores) / len(scores) if scores else 0
-
-    print("FINAL SCORE:", avg)
-
-    results = {
-        "run_time": datetime.now().isoformat(),
-        "dataset_size": len(dataset),
-        "average_score": avg,
-        "details": details
     }
 
-    save_results(results)
+    Path("evaluation/results").mkdir(exist_ok=True)
+
+    with open(RESULT_FILE, "w") as f:
+        json.dump(result, f, indent=2)
+
+    print(result)
 
 
 if __name__ == "__main__":
+
     run()
