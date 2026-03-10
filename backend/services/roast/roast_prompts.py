@@ -8,7 +8,19 @@ PERSONA_PROMPT = """
 3. behavior_pattern（一句话）
 4. roast_angle（最适合吐槽的角度）
 
-输出 JSON。
+Return ONLY valid JSON.
+Do not include explanations.
+Do not include markdown.
+Do not include extra text.
+
+Strict format:
+
+{
+ "persona_name": "...",
+ "core_traits": ["...", "..."],
+ "behavior_pattern": "...",
+ "roast_angle": "..."
+}
 """
 
 
@@ -25,11 +37,23 @@ Obsession Level
 Consistency
 Reality Contact
 
-输出 JSON：
+Return ONLY valid JSON.
+Do not include explanations.
+Do not include markdown.
+Do not include extra text.
+
+Strict format:
 
 {
-"scores":{},
-"diagnosis_rate": number
+ "scores": {
+   "Confidence": number,
+   "Self-Awareness": number,
+   "Social Adaptability": number,
+   "Obsession Level": number,
+   "Consistency": number,
+   "Reality Contact": number
+ },
+ "diagnosis_rate": number
 }
 """
 
@@ -44,6 +68,21 @@ TAG_PROMPT = """
 - 带一点讽刺
 - 不要攻击
 - 像社交媒体标签
+
+Return ONLY valid JSON.
+Do not include explanations.
+Do not include markdown.
+Do not include extra text.
+
+Strict format:
+
+{
+ "tags": [
+   "...",
+   "...",
+   "..."
+ ]
+}
 """
 
 
@@ -69,8 +108,15 @@ ROAST_PROMPT = """
 2. 用户的自我认知
 3. 用户的矛盾点
 
+Return ONLY the roast text.
+Do not include explanations.
+Do not include markdown.
+Do not include JSON.
+
 只输出最终 roast 文本。
 """
+
+
 
 CONTRADICTION_PROMPT = """
 你是一个善于观察人类行为矛盾的分析者。
@@ -85,9 +131,18 @@ CONTRADICTION_PROMPT = """
 - 不要恶意攻击
 - 每条一句话
 
-输出 JSON：
+Return ONLY valid JSON.
+Do not include explanations.
+Do not include markdown.
+Do not include extra text.
+
+Strict format:
 
 {
- "contradictions":[]
+ "contradictions": [
+   "...",
+   "...",
+   "..."
+ ]
 }
 """

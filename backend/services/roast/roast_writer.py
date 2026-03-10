@@ -1,21 +1,26 @@
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
-from llm.ollama_client import OllamaClient
-from roast_prompts import ROAST_PROMPT
+from backend.services.llm.ollama_client import OllamaClient
+from backend.services.roast.roast_prompts import ROAST_PROMPT
 
 llm = OllamaClient()
 
 
 def write_roast(
-    persona: Dict,
+    persona: Dict[str, Any],
     contradictions: List[str],
-    user_data: str,
+    user_data: Any,
+    style_preference: Optional[str] = None,
 ) -> str:
     """
-    Generate roast text using contradictions.
+    生成最终 roast 文本。
+    - 支持可选 style_preference
     """
+    contradiction_text = "\n".join(f"- {c}" for c in contradictions) if contradictions else "无明显矛盾点"
 
-    contradiction_text = "\n".join(f"- {c}" for c in contradictions)
+    style_block = ""
+    if style_preference:
+        style_block = f"\n额外风格偏好：{style_preference}\n"
 
     prompt = f"""
 User Persona:
@@ -26,11 +31,12 @@ Key Contradictions:
 
 User Data:
 {user_data}
+{style_block}
 """
 
     roast = llm.chat(
-        ROAST_PROMPT,
-        prompt,
+        system=ROAST_PROMPT,
+        user=prompt,
         temperature=0.9
     )
 

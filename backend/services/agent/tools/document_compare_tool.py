@@ -6,8 +6,22 @@ class DocumentCompareTool:
     name = "document_compare_tool"
     description = "Compare two or more documents by retrieving relevant chunks and summarizing similarities/differences."
     input_schema = {
-        "document_ids": "list[string]",
-        "method": "string"
+        "type": "object",
+        "properties": {
+            "document_ids": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 2,
+                "description": "Two or more document ids to compare."
+            },
+            "method": {
+                "type": "string",
+                "enum": ["vector", "hybrid", "rerank"],
+                "default": "hybrid"
+            }
+        },
+        "required": ["document_ids"],
+        "additionalProperties": False
     }
 
     def __init__(self):

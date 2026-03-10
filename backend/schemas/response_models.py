@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel
 
 
@@ -11,9 +12,9 @@ class UploadResponse(BaseModel):
 
 class CitationItem(BaseModel):
     citation_id: int
-    doc_id: str
-    chunk_id: str
-    chunk_index: int
+    doc_id: Optional[str] = None
+    chunk_id: Optional[str] = None
+    chunk_index: Optional[int] = None
     page_start: Optional[int] = None
     page_end: Optional[int] = None
     section: Optional[str] = None
@@ -37,8 +38,16 @@ class DocumentsResponse(BaseModel):
 
 
 class RoastResponse(BaseModel):
-    persona_name: str
-    core_traits: List[str]
+    """
+    Roast 接口的统一返回结构。
+    """
+
+    query: str
+    method: str
+    persona: Dict[str, Any]
+    scores: Dict[str, Any]
     tags: List[str]
-    scores: Dict[str, float]
+    contradictions: List[str]
     roast_text: str
+    citations: List[CitationItem]
+    retrieval_count: int

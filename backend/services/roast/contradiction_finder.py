@@ -1,21 +1,16 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 
-from llm.ollama_client import OllamaClient
-from .roast_prompts import CONTRADICTION_PROMPT
-
-llm = OllamaClient()
+from backend.services.llm.ollama_client import chat_json
+from backend.services.roast.roast_prompts import CONTRADICTION_PROMPT
 
 
-def find_contradictions(persona: Dict, user_data: str) -> List[str]:
+def find_contradictions(persona: Dict[str, Any], user_data: Any) -> List[str]:
     """
-    Extract contradictions / tensions from persona + user data.
+    从 persona + user_data 中抽取矛盾点。
 
-    Returns
-    -------
-    List[str]
-        3–5 concise contradiction statements used to guide roast writing.
+    返回：
+    - 最多 5 条可用于 roast 的矛盾表述
     """
-
     prompt = f"""
 User Persona:
 {persona}
@@ -24,14 +19,16 @@ User Data:
 {user_data}
 """
 
-    result = llm.chat_json(CONTRADICTION_PROMPT, prompt)
+    result = chat_json(CONTRADICTION_PROMPT, prompt)
 
     contradictions = result.get("contradictions", [])
+    cleaned: List[str] = []
 
-    # basic cleanup
-    cleaned = []
-    for c in contradictions:
-        if isinstance(c, str) and c.strip():
-            cleaned.append(c.strip())
+    if isinstance(contradictions, list):
+        for c in contradictions:
+            if isinstance(c, str):
+                c = c.strip()
+                if c:
+                    cleaned.append(c)
 
     return cleaned[:5]

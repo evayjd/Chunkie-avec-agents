@@ -6,8 +6,20 @@ class DocumentSummaryTool:
     name = "document_summary_tool"
     description = "Summarize a specific document using retrieved chunks."
     input_schema = {
-        "document_id": "string",
-        "method": "string"
+    "type": "object",
+        "properties": {
+            "document_id": {
+                "type": "string",
+                "description": "Target document id to summarize."
+            },
+            "method": {
+                "type": "string",
+                "enum": ["vector", "hybrid", "rerank"],
+                "default": "hybrid"
+            }
+        },
+        "required": ["document_id"],
+        "additionalProperties": False
     }
 
     def __init__(self):

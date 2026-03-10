@@ -4,8 +4,6 @@ from sqlalchemy.orm import Session
 from backend.core.database import get_db
 from backend.schemas.request_models import AskRequest
 from backend.services.retrieval.retriever_factory import get_retriever
-from backend.core.retrieval_config import RETRIEVAL_METHOD
-
 
 router = APIRouter()
 
@@ -15,8 +13,10 @@ def retrieve_chunks(
     req: AskRequest,
     db: Session = Depends(get_db)
 ):
-
-    retriever = get_retriever(RETRIEVAL_METHOD, db)
+    """
+    纯检索接口。
+    """
+    retriever = get_retriever(req.method, db)
 
     chunks = retriever.retrieve(
         question=req.question,
@@ -27,16 +27,15 @@ def retrieve_chunks(
     citations = []
 
     for c in chunks:
-
         citations.append({
             "citation_id": c["citation_id"],
-            "doc_id": c["doc_id"],
-            "chunk_id": c["chunk_id"],
-            "chunk_index": c["chunk_index"],
-            "page_start": c["page_start"],
-            "page_end": c["page_end"],
-            "section": c["section"],
-            "snippet": c["content"][:200]
+            "doc_id": c.get("doc_id"),
+            "chunk_id": c.get("chunk_id"),
+            "chunk_index": c.get("chunk_index"),
+            "page_start": c.get("page_start"),
+            "page_end": c.get("page_end"),
+            "section": c.get("section"),
+            "snippet": c.get("content", "")[:200]
         })
 
     return {

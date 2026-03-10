@@ -3,19 +3,59 @@ import requests
 
 class RoastTool:
     name = "roast_tool"
-    description = "Generate a roast based on one or more documents."
+    description = "Generate a persona-style roast analysis grounded in uploaded documents."
     input_schema = {
-        "document_ids": "list[string] | null"
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Roast analysis query or target description."
+            },
+            "document_ids": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Optional document ids to constrain roast retrieval."
+            },
+            "top_k": {
+                "type": "integer",
+                "default": 6
+            },
+            "method": {
+                "type": "string",
+                "enum": ["vector", "hybrid", "rerank"],
+                "default": "rerank"
+            },
+            "style_preference": {
+                "type": "string",
+                "description": "Optional roast style preference."
+            }
+        },
+        "required": ["query"],
+        "additionalProperties": False
     }
 
     def __init__(self, base_url: str = "http://localhost:8000"):
-        self.base_url = base_url
+        self.base_url = base_url.rstrip("/")
 
-    def run(self, document_ids=None):
+    def run(
+        self,
+        query: str,
+        document_ids=None,
+        top_k: int = 6,
+        method: str = "rerank",
+        style_preference: str | None = None
+    ):
+        """
+        RoastTool 把 query 一并传给 /roast，
+        """
         response = requests.post(
             f"{self.base_url}/roast",
             json={
-                "document_ids": document_ids
+                "query": query,
+                "document_ids": document_ids,
+                "top_k": top_k,
+                "method": method,
+                "style_preference": style_preference,
             },
             timeout=180
         )

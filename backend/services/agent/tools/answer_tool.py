@@ -5,10 +5,31 @@ class AnswerTool:
     name = "answer_tool"
     description = "Answer a question using the RAG pipeline."
     input_schema = {
-        "question": "string",
-        "method": "string",
-        "top_k": "integer",
-        "document_ids": "list[string] | null"
+        "type": "object",
+        "properties": {
+            "question": {"type": "string"},
+            "method": {
+                "type": "string",
+                "enum": ["vector", "hybrid", "rerank"],
+                "default": "hybrid"
+            },
+            "top_k": {
+                "type": "integer",
+                "minimum": 1,
+                "default": 5
+            },
+            "document_ids": {
+                "type": ["array", "null"],
+                "items": {"type": "string"}
+            },
+            "use_general_knowledge": {
+                "type": "boolean",
+                "default": False,
+                "description": "When true, bypass document grounding and answer from general knowledge."
+            }
+        },
+        "required": ["question"],
+        "additionalProperties": False
     }
 
     def __init__(self, base_url: str = "http://localhost:8000"):
