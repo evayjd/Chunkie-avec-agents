@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────
+   Base
+───────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+}
+
+html, body, #app {
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  @apply bg-petal-50 text-stone-700 antialiased tracking-wide;
+  font-family: 'Patrick Hand', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Scrollbar
+───────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(248, 143, 168, 0.3) transparent;
+}
+*::-webkit-scrollbar { width: 5px; height: 5px; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(248, 143, 168, 0.35);
+  border-radius: 999px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Reusable component classes
+───────────────────────────────────────────────────────── */
+.card {
+  @apply rounded-xl border border-stone-200 bg-white;
+}
+
+.card-muted {
+  @apply rounded-xl border border-blush-200 bg-blush-50;
+}
+
+.pill {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+/* illustration placeholder */
+.illust-placeholder {
+  @apply 
+        fixed bottom-0 right-0 pointer-events-none select-none;
+        z-index: 0;
+        background:transparent;
+
+}
+
+/* ─────────────────────────────────────────────────────────
+   Typography helpers
+───────────────────────────────────────────────────────── */
+.page-title {
+  @apply text-lg font-semibold text-stone-800 tracking-tight;
+}
+
+.section-label {
+  @apply text-xs font-medium uppercase tracking-widest text-stone-400;
+}
+
+/* Prose override for RAG answers (no @tailwindcss/typography required) */
+.prose-ballet {
+  @apply text-sm leading-7 text-stone-700 max-w-none;
+}
+.prose-ballet strong { @apply font-semibold text-stone-800; }
+.prose-ballet a      { @apply text-petal-500 underline underline-offset-2; }
+.prose-ballet code   { @apply text-petal-600 bg-blush-50 px-1 rounded text-[0.8em]; }
+.prose-ballet h1,.prose-ballet h2,.prose-ballet h3 { @apply font-semibold text-stone-700; }
+
+/* ─────────────────────────────────────────────────────────
+   Focus ring
+───────────────────────────────────────────────────────── */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-petal-300 focus:ring-offset-1;
+}

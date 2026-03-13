@@ -10,7 +10,7 @@ from backend.db.repositories.document_repo import DocumentRepository
 from backend.services.ingestion.parsers.factory import ParserFactory
 from backend.services.ingestion.cleaning.text_cleaner import TextCleaner
 from backend.services.ingestion.chunking.text_chunker import TextChunker
-from backend.services.ingestion.embedding.embedder import Embedder
+from backend.services.ingestion.embedding.embedder import get_embedder
 from backend.services.ingestion.indexing.vector_indexer import VectorIndexer
 
 
@@ -41,7 +41,7 @@ class IngestionPipeline:
 
         self.chunker = TextChunker()
 
-        self.embedder = Embedder()
+        self.embedder = get_embedder()
 
         self.indexer = VectorIndexer(db)
 
@@ -93,33 +93,28 @@ class IngestionPipeline:
         logger.info(f"Document stored: {document_id}")
 
         # ----------------------------------------------
-        # chunking
+        # chunking → embedding → indexing
+        # 修复 Bug 4：任意步骤失败时回滚 DB 事务，避免孤立 document 记录
         # ----------------------------------------------
 
-        chunks = self.chunker.chunk(cleaned_doc)
+        try:
+            chunks = self.chunker.chunk(cleaned_doc)
+            logger.info(f"Chunking completed: {len(chunks)} chunks")
 
-        logger.info(f"Chunking completed: {len(chunks)} chunks")
+            texts = [c["content"] for c in chunks]
+            embeddings = self.embedder.embed_texts(texts)
+            logger.info("Embedding completed")
 
-        # ----------------------------------------------
-        # embedding
-        # ----------------------------------------------
+            self.indexer.index_chunks(
+                document_id=document_id,
+                chunks=chunks,
+                embeddings=embeddings
+            )
+            logger.info("Vector indexing completed")
 
-        texts = [c["content"] for c in chunks]
-
-        embeddings = self.embedder.embed_texts(texts)
-
-        logger.info("Embedding completed")
-
-        # ----------------------------------------------
-        # indexing
-        # ----------------------------------------------
-
-        self.indexer.index_chunks(
-            document_id=document_id,
-            chunks=chunks,
-            embeddings=embeddings
-        )
-
-        logger.info("Vector indexing completed")
+        except Exception as exc:
+            logger.error(f"Pipeline failed after document creation: {exc}. Rolling back.")
+            self.db.rollback()
+            raise
 
         return document_id

@@ -5,7 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from backend.services.retrieval.base_retriever import BaseRetriever
 
-from backend.services.ingestion.embedding.embedder import Embedder
+from backend.services.ingestion.embedding.embedder import get_embedder
 
 
 class VectorRetriever(BaseRetriever):
@@ -15,7 +15,7 @@ class VectorRetriever(BaseRetriever):
 
     def __init__(self, db: Session):
         self.db = db
-        self.embedder = Embedder()
+        self.embedder = get_embedder()
 
     # --------------------------------------------------
     # vector search

@@ -1,27 +1,10 @@
 import json
-import re
 from typing import Any, Dict, List, Optional, Sequence, Union
-
-import requests
-
-
-OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL_NAME = "llama3.1:8b"
-
-
-class RoastLLMError(Exception):
-    pass
 
 
 class RoastUserPayload(dict):
     """
-    Dict-like payload for roast pipeline.
-
-    Why this exists:
-    - roast_pipeline currently passes user_data into multiple prompt builders
-    - some downstream code implicitly treats user_data as printable text
-    - this class keeps machine-readable dict semantics while providing a stable
-      string representation for prompt construction
+    Stable dict-like payload for roast pipeline.
     """
 
     def to_prompt_text(self) -> str:
@@ -31,110 +14,12 @@ class RoastUserPayload(dict):
         return self.to_prompt_text()
 
 
-def _extract_json(text: str) -> Dict[str, Any]:
-    """
-    Try to extract a JSON object from model output.
-    """
-
-    text = text.strip()
-
-    try:
-        return json.loads(text)
-    except Exception:
-        pass
-
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-
-    if match:
-        try:
-            return json.loads(match.group())
-        except Exception:
-            pass
-
-    raise RoastLLMError("LLM output is not valid JSON")
-
-
-def chat(system_prompt: str, user_prompt: str, temperature: float = 0.7) -> str:
-    payload = {
-        "model": MODEL_NAME,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "options": {
-            "temperature": temperature,
-        },
-        "stream": False,
-    }
-
-    res = requests.post(OLLAMA_URL, json=payload, timeout=120)
-
-    if res.status_code != 200:
-        raise RoastLLMError(res.text)
-
-    return res.json()["message"]["content"]
-
-
-def chat_json(system_prompt: str, user_prompt: str) -> Dict[str, Any]:
-    text = chat(system_prompt, user_prompt)
-    return _extract_json(text)
-
-
-def chat_text(system_prompt: str, user_prompt: str) -> str:
-    return chat(system_prompt, user_prompt, temperature=0.9)
-
-
-def safe_list(items: List[Any], max_len: int = 6) -> List[str]:
-    if not isinstance(items, list):
-        return []
-
-    cleaned: List[str] = []
-
-    for i in items:
-        if isinstance(i, str):
-            value = i.strip()
-            if value:
-                cleaned.append(value)
-
-    return cleaned[:max_len]
-
-
-def clamp_score(x: Any) -> int:
-    try:
-        x = int(float(x))
-    except Exception:
-        return 50
-
-    return max(0, min(100, x))
-
-
-def clamp_rate(x: Any) -> float:
-    try:
-        x = round(float(x), 1)
-    except Exception:
-        return 90.0
-
-    return max(80.0, min(99.0, x))
-
-
-# -------------------------------------------------------------------
-# Contract normalization
-# -------------------------------------------------------------------
-
 ParsedDoc = Dict[str, Any]
 ChunkLike = Dict[str, Any]
 UserDataInput = Union[ParsedDoc, Sequence[ChunkLike]]
 
 
 def _is_parsed_doc(obj: Any) -> bool:
-    """
-    Stable ingestion contract:
-    {
-        "text": str,
-        "pages": list[dict],
-        "metadata": dict
-    }
-    """
     return (
         isinstance(obj, dict)
         and "text" in obj
@@ -156,22 +41,6 @@ def _normalize_page(page: Dict[str, Any], fallback_num: int) -> Dict[str, Any]:
 
 
 def _normalize_chunk(chunk: Dict[str, Any], fallback_citation_id: int) -> Dict[str, Any]:
-    """
-    Unified roast evidence chunk contract.
-
-    Accepted upstream variants:
-    1. Retrieval output:
-       {
-         "citation_id", "doc_id", "chunk_id", "chunk_index",
-         "content", "page_start", "page_end", "section"
-       }
-
-    2. Ingestion chunk output:
-       {
-         "chunk_id", "chunk_index", "content",
-         "page_start", "page_end", "section", "metadata"
-       }
-    """
     return {
         "citation_id": int(chunk.get("citation_id", fallback_citation_id)),
         "doc_id": chunk.get("doc_id"),
@@ -192,7 +61,7 @@ def _build_from_parsed_doc(
     top_k: Optional[int] = None,
 ) -> RoastUserPayload:
     raw_pages = parsed_doc.get("pages", []) or []
-    pages: List[Dict[str, Any]] = [
+    pages = [
         _normalize_page(page, fallback_num=i)
         for i, page in enumerate(raw_pages, start=1)
     ]
@@ -204,44 +73,38 @@ def _build_from_parsed_doc(
         if not content:
             continue
 
-        evidence_chunks.append(
-            {
-                "citation_id": i,
-                "doc_id": None,
-                "chunk_id": None,
-                "chunk_index": i - 1,
-                "content": content,
-                "page_start": page["page_num"],
-                "page_end": page["page_num"],
-                "section": page.get("section"),
-                "metadata": {},
-            }
-        )
+        evidence_chunks.append({
+            "citation_id": i,
+            "doc_id": None,
+            "chunk_id": None,
+            "chunk_index": i - 1,
+            "content": content,
+            "page_start": page["page_num"],
+            "page_end": page["page_num"],
+            "section": page.get("section"),
+            "metadata": {},
+        })
 
-    evidence_texts = [c["content"] for c in evidence_chunks if c["content"].strip()]
     full_text = str(parsed_doc.get("text", "") or "")
+    evidence_texts = [c["content"] for c in evidence_chunks if c["content"].strip()]
 
-    payload = RoastUserPayload(
-        {
-            "schema_version": "1.0",
-            "source_type": "parsed_doc",
-            "query": query,
-            "document_ids": document_ids or [],
-            "top_k": top_k,
-            "full_text": full_text,
-            "metadata": parsed_doc.get("metadata") if isinstance(parsed_doc.get("metadata"), dict) else {},
-            "pages": pages,
-            "evidence_chunks": evidence_chunks,
-            "evidence_texts": evidence_texts,
-            "stats": {
-                "page_count": len(pages),
-                "evidence_chunk_count": len(evidence_chunks),
-                "text_char_count": len(full_text),
-            },
-        }
-    )
-
-    return payload
+    return RoastUserPayload({
+        "schema_version": "2.0",
+        "source_type": "parsed_doc",
+        "query": query,
+        "document_ids": document_ids or [],
+        "top_k": top_k,
+        "full_text": full_text,
+        "metadata": parsed_doc.get("metadata") if isinstance(parsed_doc.get("metadata"), dict) else {},
+        "pages": pages,
+        "evidence_chunks": evidence_chunks,
+        "evidence_texts": evidence_texts,
+        "stats": {
+            "page_count": len(pages),
+            "evidence_chunk_count": len(evidence_chunks),
+            "text_char_count": len(full_text),
+        },
+    })
 
 
 def _build_from_chunks(
@@ -274,27 +137,23 @@ def _build_from_chunks(
     evidence_texts = [c["content"] for c in normalized_chunks if c["content"].strip()]
     full_text = "\n\n".join(evidence_texts)
 
-    payload = RoastUserPayload(
-        {
-            "schema_version": "1.0",
-            "source_type": "retrieved_chunks",
-            "query": query,
-            "document_ids": document_ids or inferred_doc_ids,
-            "top_k": top_k,
-            "full_text": full_text,
-            "metadata": {},
-            "pages": pages,
-            "evidence_chunks": normalized_chunks,
-            "evidence_texts": evidence_texts,
-            "stats": {
-                "page_count": len(pages),
-                "evidence_chunk_count": len(normalized_chunks),
-                "text_char_count": len(full_text),
-            },
-        }
-    )
-
-    return payload
+    return RoastUserPayload({
+        "schema_version": "2.0",
+        "source_type": "retrieved_chunks",
+        "query": query,
+        "document_ids": document_ids or inferred_doc_ids,
+        "top_k": top_k,
+        "full_text": full_text,
+        "metadata": {},
+        "pages": pages,
+        "evidence_chunks": normalized_chunks,
+        "evidence_texts": evidence_texts,
+        "stats": {
+            "page_count": len(pages),
+            "evidence_chunk_count": len(normalized_chunks),
+            "text_char_count": len(full_text),
+        },
+    })
 
 
 def build_user_data(
@@ -304,52 +163,12 @@ def build_user_data(
     top_k: Optional[int] = None,
 ) -> RoastUserPayload:
     """
-    Build a unified roast payload from either:
-    1. ingestion parsed_doc dict
-    2. retrieval / roast_pipeline chunk list
+    Stable contract for roast pipeline.
 
-    Output contract (100% fixed):
-    {
-        "schema_version": str,
-        "source_type": "parsed_doc" | "retrieved_chunks",
-        "query": str | None,
-        "document_ids": List[str],
-        "top_k": int | None,
-        "full_text": str,
-        "metadata": Dict[str, Any],
-        "pages": List[
-            {
-                "page_num": int,
-                "content": str,
-                "section": str | None
-            }
-        ],
-        "evidence_chunks": List[
-            {
-                "citation_id": int,
-                "doc_id": str | None,
-                "chunk_id": str | None,
-                "chunk_index": int | None,
-                "content": str,
-                "page_start": int | None,
-                "page_end": int | None,
-                "section": str | None,
-                "metadata": Dict[str, Any]
-            }
-        ],
-        "evidence_texts": List[str],
-        "stats": {
-            "page_count": int,
-            "evidence_chunk_count": int,
-            "text_char_count": int
-        }
-    }
-
-    This function is intentionally shape-stable so that roast_pipeline and all
-    downstream roast prompts consume the same payload regardless of whether the
-    source is parsed_doc or retrieved chunks.
+    Supports:
+    1. parsed_doc
+    2. retrieved chunks
     """
-
     if _is_parsed_doc(source):
         return _build_from_parsed_doc(
             parsed_doc=source,

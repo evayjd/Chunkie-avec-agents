@@ -141,9 +141,33 @@ class OllamaClient:
         temperature: float = 0.7
     ) -> Dict[str, Any]:
         """
-        JSON安全调用
+        JSON安全调用 — 使用 Ollama format:json 约束，强制模型输出合法 JSON。
+        不依赖 prompt 中的 JSON 指令，从 API 层面保证输出格式。
         """
-        text = self.chat(system, user, temperature)
+        url = f"{self.base_url}/api/chat"
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user}
+            ],
+            "options": {"temperature": temperature},
+            "format": "json",   # ← 强制 JSON 输出，不依赖 prompt 指令
+            "stream": False
+        }
+
+        try:
+            r = requests.post(url, json=payload, timeout=120)
+        except requests.exceptions.ConnectionError:
+            raise RuntimeError(
+                "Cannot connect to Ollama. Did you run 'ollama serve'?"
+            )
+
+        if r.status_code != 200:
+            raise RuntimeError(f"Ollama error: {r.text}")
+
+        text = r.json()["message"]["content"]
         return self._parse_json(text)
 
     def generate(
