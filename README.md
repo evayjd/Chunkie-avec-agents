@@ -1,1 +1,4 @@
 # Chunkie-avec-agents
+v1.5版本没有进行agent结合，只是优化了检索策略以及和前端的融合
+前端做的比较潦草，主要是探索typescript和tailwindcss的使用
+项目目前有很多需要优化的地方，在我水平更进一步的时候我再继续进行探索
