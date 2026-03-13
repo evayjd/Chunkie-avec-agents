@@ -1,0 +1,8 @@
+/* src/Decor/font.css */
+@font-face {
+  font-family: 'KaeruKaeru';
+  src: url('./kaerukaeru-regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

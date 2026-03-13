@@ -1,0 +1,62 @@
+{
+  "app": {
+    "tagline": "多语言溯源知识库"
+  },
+  "nav": {
+    "chat": "知识问答",
+    "documents": "文档管理",
+    "roast": "人格分析"
+  },
+  "chat": {
+    "placeholder": "基于你的文档提问…",
+    "send": "发送",
+    "thinking": "正在思考…",
+    "noSources": "暂无文档，请先上传",
+    "citations": "引用来源",
+    "grounded": "已溯源",
+    "ungrounded": "无依据"
+  },
+"documents": {
+  "title": "文档管理",
+  "upload": "上传文档",
+  "uploading": "上传中…",
+  "empty": "暂无文档，点击上传",
+  "status": {
+    "pending": "等待中",
+    "processing": "处理中",
+    "indexed": "已索引",
+    "ready": "就绪",
+    "failed": "失败"
+  },
+  "delete": "删除",
+  "confirmDelete": "确认删除此文档？"
+},
+  "roast": {
+    "title": "人格分析",
+    "generate": "生成分析",
+    "generating": "分析中…",
+    "radarTitle": "人格维度雷达图",
+    "dimensions": {
+      "builder_energy": "构建者能量",
+      "academic_intensity": "学术强度",
+      "perfectionism": "完美主义",
+      "multilingual_flex": "多语言灵活性",
+      "career_signaling": "职业信号",
+      "aesthetic_obsession": "美学痴迷",
+      "chaos_factor": "混乱因子",
+      "overengineering_risk": "过度工程风险"
+    },
+    "tags": "人格标签",
+    "empty": "请先上传文档再生成分析",
+    "emptyReady": "点击「生成分析」按钮开始人格分析"
+  },
+  "common": {
+    "loading": "加载中…",
+    "error": "出错了",
+    "retry": "重试",
+    "cancel": "取消",
+    "confirm": "确认",
+    "words": "字",
+    "chunks": "块"
+  }
+}

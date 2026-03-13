@@ -1,0 +1,62 @@
+{
+  "app": {
+    "tagline": "Multilingual RAG Knowledge Base"
+  },
+  "nav": {
+    "chat": "Chat",
+    "documents": "Documents",
+    "roast": "Persona Analysis"
+  },
+  "chat": {
+    "placeholder": "Ask about your documents…",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "noSources": "No documents yet, please upload first",
+    "citations": "Citations",
+    "grounded": "Grounded",
+    "ungrounded": "Ungrounded"
+  },
+"documents": {
+  "title": "Documents",
+  "upload": "Upload",
+  "uploading": "Uploading…",
+  "empty": "No documents yet. Click to upload.",
+  "status": {
+    "pending": "Pending",
+    "processing": "Processing",
+    "indexed": "Indexed",
+    "ready": "Ready",
+    "failed": "Failed"
+  },
+  "delete": "Delete",
+  "confirmDelete": "Delete this document?"
+},
+  "roast": {
+    "title": "Persona Analysis",
+    "generate": "Generate Analysis",
+    "generating": "Analyzing…",
+    "radarTitle": "Persona Radar",
+    "dimensions": {
+      "builder_energy": "Builder Energy",
+      "academic_intensity": "Academic Intensity",
+      "perfectionism": "Perfectionism",
+      "multilingual_flex": "Multilingual Flex",
+      "career_signaling": "Career Signaling",
+      "aesthetic_obsession": "Aesthetic Obsession",
+      "chaos_factor": "Chaos Factor",
+      "overengineering_risk": "Overengineering Risk"
+    },
+    "tags": "Persona Tags",
+    "empty": "Upload documents first to generate analysis",
+    "emptyReady": "Click \"Generate Analysis\" to start"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "words": "words",
+    "chunks": "chunks"
+  }
+}

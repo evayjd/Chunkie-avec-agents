@@ -1,0 +1,90 @@
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 数据库（含 pgvector 扩展）
+  # ---------------------------------------------------------------------------
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: personakb-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-persona}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-persona}
+      POSTGRES_DB: ${POSTGRES_DB:-personakb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-persona} -d ${POSTGRES_DB:-personakb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - personakb-net
+
+  # ---------------------------------------------------------------------------
+  # FastAPI 后端服务
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: personakb-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-persona}:${POSTGRES_PASSWORD:-persona}@db:5432/${POSTGRES_DB:-personakb}
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/storage:/app/storage
+      - ./backend/logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - personakb-net
+
+  # ---------------------------------------------------------------------------
+  # Vue 3 前端服务（生产构建 + Nginx）
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8000/api/v1
+        VITE_APP_NAME: PersonaKB
+    container_name: personakb-frontend
+    restart: unless-stopped
+    ports:
+      - "5137:80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - personakb-net
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  personakb-net:
+    driver: bridge

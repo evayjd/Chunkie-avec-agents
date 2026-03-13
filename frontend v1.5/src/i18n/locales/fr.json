@@ -1,0 +1,62 @@
+{
+  "app": {
+    "tagline": "Base de connaissances RAG multilingue"
+  },
+  "nav": {
+    "chat": "Chat",
+    "documents": "Documents",
+    "roast": "Analyse de personnalité"
+  },
+  "chat": {
+    "placeholder": "Posez une question sur vos documents…",
+    "send": "Envoyer",
+    "thinking": "Réflexion…",
+    "noSources": "Aucun document, veuillez d'abord télécharger",
+    "citations": "Citations",
+    "grounded": "Fondé",
+    "ungrounded": "Sans fondement"
+  },
+"documents": {
+  "title": "Documents",
+  "upload": "Télécharger",
+  "uploading": "Téléchargement…",
+  "empty": "Aucun document. Cliquez pour télécharger.",
+  "status": {
+    "pending": "En attente",
+    "processing": "En cours",
+    "indexed": "Indexé",
+    "ready": "Prêt",
+    "failed": "Échoué"
+  },
+  "delete": "Supprimer",
+  "confirmDelete": "Supprimer ce document ?"
+},
+  "roast": {
+    "title": "Analyse de personnalité",
+    "generate": "Générer l'analyse",
+    "generating": "Analyse en cours…",
+    "radarTitle": "Radar de personnalité",
+    "dimensions": {
+      "builder_energy": "Énergie de constructeur",
+      "academic_intensity": "Intensité académique",
+      "perfectionism": "Perfectionnisme",
+      "multilingual_flex": "Flexibilité multilingue",
+      "career_signaling": "Signal de carrière",
+      "aesthetic_obsession": "Obsession esthétique",
+      "chaos_factor": "Facteur chaos",
+      "overengineering_risk": "Risque de sur-ingénierie"
+    },
+    "tags": "Tags de personnalité",
+    "empty": "Téléchargez des documents pour générer l'analyse",
+    "emptyReady": "Cliquez sur \"Générer l'analyse\" pour commencer"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "words": "mots",
+    "chunks": "blocs"
+  }
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "query": "个人项目和构建经历",
+    "relevant_chunk_ids": [],
+    "notes": "测试构建者维度检索"
+  },
+  {
+    "query": "学术研究与论文写作",
+    "relevant_chunk_ids": [],
+    "notes": "测试学术强度维度"
+  },
+  {
+    "query": "多语言切换和语言学习",
+    "relevant_chunk_ids": [],
+    "notes": "测试多语言维度"
+  }
+]
