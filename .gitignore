@@ -12,6 +12,7 @@ __pycache__/
 .Python
 .env
 .env.*
+!.env.example
 .venv/
 venv/
 ENV/
@@ -19,6 +20,16 @@ env/
 
 pip-log.txt
 pip-delete-this-directory.txt
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# mypy / ruff
+.mypy_cache/
+.ruff_cache/
 
 # =========================
 # Build / packaging
@@ -67,11 +78,12 @@ Thumbs.db
 *.sqlite3
 
 # =========================
-# Upload files
+# Upload files / Storage
 # =========================
 
 uploads/
 test.docx
+backend/storage/
 
 # =========================
 # Vector / embeddings cache
@@ -94,14 +106,17 @@ evaluation/results/
 # =========================
 
 node_modules/
-dist/
-build/
+.cache/
+*.local
+frontend/dist/
+frontend/.vite/
 
 # =========================
 # Docker
 # =========================
 
 docker-data/
+.dockerignore
 *.pid
 *.seed
 *.pid.lock
@@ -117,12 +132,16 @@ ollama_models/
 # Secrets
 # =========================
 
-.env
 .env.local
 .env.production
+*.pem
+*.key
+*.crt
+secrets/
 
 # =========================
-# others
+# Others
 # =========================
+
 code_to_md.py
 project_bundle.md
